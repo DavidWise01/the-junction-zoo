@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Junction Zoo — Doped Device Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#150e21; --ground-2:#1d1430; --surface:#241836; --surface-2:#2c1f42;
+    --edge:#3a2a58; --ink:#ece1f7; --ink-soft:#bfaed6; --ink-mute:#8c7aa6;
+    --violet:#b98bff; --violet-deep:#7c4bd8;
+    --n:#5cd3ff;       /* n-type / electrons */
+    --p:#ff7aa8;       /* p-type / holes     */
+    --i:#9a8cc4;       /* intrinsic          */
+    --metal:#cfcde0;   /* metal / gate       */
+    --oxide:#b98bff;   /* dielectric         */
+    --light:#ffce5c;   /* photons            */
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(1100px 700px at 80% -8%, rgba(124,75,216,.26), transparent 60%),
+      radial-gradient(900px 600px at 6% 10%, rgba(120,60,180,.16), transparent 55%),
+      var(--ground);
+    color:var(--ink); font-family:"Space Grotesk",system-ui,sans-serif; line-height:1.6;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+  header{padding:80px 0 34px;}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--violet);margin-bottom:24px;}
+  .masthead{display:grid;grid-template-columns:1.15fr .9fr;gap:46px;align-items:center;}
+  h1{font-family:"Fraunces",serif;font-weight:500;font-size:clamp(42px,7.4vw,86px);
+    line-height:.97;letter-spacing:-.015em;}
+  h1 em{font-style:italic;color:var(--violet);}
+  .thesis{margin-top:24px;max-width:48ch;font-size:18px;color:var(--ink-soft);}
+  .count{margin-top:28px;display:flex;flex-wrap:wrap;border-top:1px solid var(--edge);
+    padding-top:18px;font-family:"JetBrains Mono",monospace;}
+  .count div{padding-right:26px;margin-right:26px;border-right:1px solid var(--edge);}
+  .count div:last-child{border-right:0;}
+  .count b{display:block;font-size:28px;font-weight:700;line-height:1;color:var(--ink);}
+  .count span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);}
+
+  .hero-dev{width:100%;max-width:420px;justify-self:center;}
+  .hero-dev svg{width:100%;height:auto;display:block;}
+  .hero-cap{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-mute);text-align:center;margin-top:6px;}
+  .hero-cap b{color:var(--n);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:9px 22px;margin-top:14px;padding:16px 0;
+    border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);}
+  .legend .item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);
+    font-family:"JetBrains Mono",monospace;letter-spacing:.02em;}
+  .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(255,255,255,.18);}
+  .dotc{width:10px;height:10px;border-radius:50%;box-shadow:0 0 8px currentColor;}
+  .legend .note{margin-left:auto;color:var(--ink-mute);font-size:11.5px;}
+
+  section{padding:58px 0 4px;}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:6px;flex-wrap:wrap;}
+  .sec-head h2{font-family:"Fraunces",serif;font-weight:500;font-size:clamp(25px,3.6vw,36px);
+    letter-spacing:-.01em;}
+  .sec-head .tag{font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.06em;
+    padding:4px 11px;border-radius:999px;border:1px solid var(--edge);color:var(--ink-soft);}
+  .sec-sub{max-width:74ch;color:var(--ink-soft);margin:4px 0 26px;font-size:15.5px;}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+  .card{background:linear-gradient(180deg,var(--surface),var(--ground-2));
+    border:1px solid var(--edge);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;
+    transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;}
+  .card:hover{transform:translateY(-3px);border-color:var(--violet-deep);
+    box-shadow:0 18px 38px -22px rgba(124,75,216,.7);}
+  .diagram{background:radial-gradient(circle at 50% 40%,rgba(124,75,216,.12),transparent 70%);
+    padding:8px 10px 4px;}
+  .diagram svg{width:100%;height:auto;display:block;}
+  .meta{padding:14px 18px 18px;border-top:1px solid var(--edge);}
+  .meta .name{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:7px;}
+  .meta .name h3{font-family:"Fraunces",serif;font-weight:500;font-size:20px;}
+  .meta .name .abbr{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:12px;color:var(--ink-mute);}
+  .meta p{font-size:13.5px;color:var(--ink-soft);line-height:1.55;}
+  .chips{margin-top:11px;display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.03em;
+    padding:3px 8px;border-radius:6px;border:1px solid var(--edge);color:var(--ink-soft);
+    background:rgba(0,0,0,.16);}
+  .chip.mat{color:var(--violet);border-color:rgba(185,139,255,.35);}
+
+  footer{margin-top:66px;padding:38px 0 70px;border-top:1px solid var(--edge);
+    color:var(--ink-mute);font-size:13.5px;max-width:80ch;}
+  footer b{color:var(--ink-soft);font-weight:500;}
+  footer em{color:var(--n);font-style:normal;}
+  .sig{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;margin-top:22px;color:var(--violet);}
+
+  @media (max-width:760px){
+    .masthead{grid-template-columns:1fr;gap:26px;}
+    .hero-dev{order:-1;max-width:340px;}
+    header{padding:52px 0 26px;}
+    .legend .note{margin-left:0;width:100%;}
+  }
+  @media (prefers-reduced-motion:reduce){.card{transition:none;}html{scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Doped semiconductor devices · field guide · II</div>
+    <div class="masthead">
+      <div>
+        <h1>The junction <em>zoo</em></h1>
+        <p class="thesis">Put a few doped regions next to each other and you get a valve. Add a third and you get a switch. Let light in or out and you get an eye or a lamp. Almost the entire electronics shelf is the same trick — <em>p</em> against <em>n</em> — wired into different shapes.</p>
+        <div class="count">
+          <div><b>5</b><span>families</span></div>
+          <div><b>22</b><span>devices</span></div>
+          <div><b>1</b><span>idea: the junction</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="hero-dev" id="hero"></div>
+        <div class="hero-cap">the p–n junction · <b>parent of all of them</b></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="sw" style="background:rgba(92,211,255,.3)"></span>n-type</div>
+      <div class="item"><span class="sw" style="background:rgba(255,122,168,.3)"></span>p-type</div>
+      <div class="item"><span class="sw" style="background:rgba(154,140,196,.3)"></span>intrinsic</div>
+      <div class="item"><span class="sw" style="background:rgba(207,205,224,.4)"></span>metal / gate</div>
+      <div class="item"><span class="sw" style="background:rgba(185,139,255,.4)"></span>dielectric</div>
+      <div class="item"><span class="dotc" style="color:var(--n)"></span>carriers (current)</div>
+      <div class="item"><span class="dotc" style="color:var(--light)"></span>photons</div>
+      <div class="note">moving dots = real carrier drift, not decoration</div>
+    </div>
+  </header>
+
+  <main id="sections"></main>
+
+  <footer>
+    <p><b>What the motion means this time.</b> The drifting dots are charge carriers — electrons in <em>n</em> regions, holes in <em>p</em> — moving in the direction of current. When they cross a junction or fill a channel, that <em>is</em> the device working. Contrast the first sheet, where electrons orbited the nucleus on circular tracks: that was a Bohr-model convention, pleasant but fictional. Real bound electrons are probability clouds. Here the motion earns its place.</p>
+    <p style="margin-top:13px;">Cross-sections are schematic — region order and proportion convey the doping idea, not exact geometry or scale. "All devices" is the canonical set, not literally every part ever made; specialty processes recruit more of the table. Silicon devices use B / P / As; the rest name their own dopants on each card.</p>
+    <div class="sig">Field guide · v1.0 · companion to “The Doped Crystal”</div>
+  </footer>
+
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+const reduce = (window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches) || false;
+const COL = {
+  n:"#5cd3ff", p:"#ff7aa8", i:"#9a8cc4", metal:"#cfcde0", oxide:"#b98bff", light:"#ffce5c"
+};
+const FILL = {n:"rgba(92,211,255,.16)",p:"rgba(255,122,168,.16)",i:"rgba(154,140,196,.16)",
+  metal:"rgba(207,205,224,.30)",oxide:"rgba(185,139,255,.28)"};
+
+/* region: {t:type, l:label, w:weight}
+   flow: +1 / -1 / 0   band:[lo,hi] fraction of slab for carriers
+   gate: index of region the gate sits over (oxide+gate bar)
+   fgate: like gate but two stacked plates (floating-gate memory)
+   light: 'out' | 'in' | null
+   carrier: 'e' | 'h' | 'both'
+   extra: optional small annotation drawn (e.g. 'B⊗' for Hall) */
+const DEVICES = [
+ {fam:"diodes", n:"p–n junction diode", a:"diode",
+  reg:[{t:'p',l:'p',w:1},{t:'n',l:'n',w:1}], flow:1, carrier:'both',
+  fn:"The original one-way valve. Forward bias floods the junction with carriers and it conducts; reverse bias widens the depletion gap and it blocks. Every rectifier and power supply starts here.",
+  mat:"Si", chips:["B + P","rectify"]},
+
+ {fam:"diodes", n:"Zener diode", a:"zener",
+  reg:[{t:'p',l:'p+',w:1},{t:'n',l:'n+',w:1}], flow:-1, carrier:'e',
+  fn:"Doped heavily on both sides so the junction breaks down — backwards — at a sharp, repeatable voltage. Run it in reverse and it pins a node to that voltage: the cheap voltage reference and clamp.",
+  mat:"Si", chips:["heavy B/P","regulate"]},
+
+ {fam:"diodes", n:"Schottky diode", a:"schottky",
+  reg:[{t:'metal',l:'metal',w:.75},{t:'n',l:'n−',w:1.25}], flow:1, carrier:'e',
+  fn:"A metal sitting directly on lightly-doped silicon — no p-region, so no stored minority charge to clear out. Result: a tiny forward drop and switching fast enough for power converters and RF mixers.",
+  mat:"Si", chips:["light P","fast switch"]},
+
+ {fam:"diodes", n:"PIN diode", a:"pin",
+  reg:[{t:'p',l:'p',w:.8},{t:'i',l:'i',w:1.3},{t:'n',l:'n',w:.8}], flow:1, carrier:'both', band:[0,1],
+  fn:"A wide undoped layer wedged between p and n. At RF it behaves as a current-controlled resistor — the microwave switch and attenuator — and the same fat intrinsic region makes a sensitive photodetector.",
+  mat:"Si", chips:["intrinsic gap","RF switch"]},
+
+ {fam:"diodes", n:"Tunnel (Esaki) diode", a:"tunnel",
+  reg:[{t:'p',l:'p++',w:1},{t:'n',l:'n++',w:1}], flow:1, carrier:'e',
+  fn:"Doped so absurdly hard the bands overlap and electrons quantum-tunnel straight through. Over part of its curve more voltage gives less current — negative resistance — good for oscillators into the gigahertz.",
+  mat:"Ge / GaAs", chips:["degenerate","neg. resistance"]},
+
+ {fam:"diodes", n:"Varactor (varicap)", a:"varactor",
+  reg:[{t:'p',l:'p',w:1},{t:'n',l:'n',w:1}], flow:0, carrier:'both',
+  fn:"A junction held in reverse, used on purpose as a capacitor whose value shifts with voltage — the depletion gap is the dielectric. It tunes radios, PLLs, and oscillators electronically.",
+  mat:"Si", chips:["tunable C","RF tuning"]},
+
+ {fam:"transistors", n:"Bipolar junction transistor", a:"BJT",
+  reg:[{t:'n',l:'n+ E',w:.9},{t:'p',l:'p B',w:.55},{t:'n',l:'n C',w:1.25}], flow:1, carrier:'e',
+  fn:"Three doped regions back to back. A small current into the thin base steers a large current from emitter to collector — current gain. The amplifier that built analog electronics.",
+  mat:"Si", chips:["As/B/P","amplify"]},
+
+ {fam:"transistors", n:"MOSFET", a:"MOSFET",
+  reg:[{t:'n',l:'n+ S',w:.9},{t:'p',l:'p-body',w:1.45},{t:'n',l:'n+ D',w:.9}], flow:1, carrier:'e',
+  gate:1, band:[.28,.72],
+  fn:"Doped source and drain in a doped body, with an insulated gate above. Gate voltage inverts a channel between them and current flows. The universal switch — logic, memory, and power all ride on it.",
+  mat:"Si", chips:["P/As/B","switch"]},
+
+ {fam:"transistors", n:"JFET", a:"JFET",
+  reg:[{t:'p',l:'p gate',w:.5},{t:'n',l:'n channel',w:1.5},{t:'p',l:'p gate',w:.5}], flow:1, carrier:'e',
+  band:[.27,.73],
+  fn:"A doped channel squeezed by the depletion region of a reverse-biased gate junction. No gate current, very low noise — favoured at the front of sensitive analog and audio inputs.",
+  mat:"Si", chips:["junction gate","low-noise amp"]},
+
+ {fam:"transistors", n:"IGBT", a:"IGBT",
+  reg:[{t:'p',l:'p+ col',w:.8},{t:'n',l:'n− drift',w:1.5},{t:'p',l:'p',w:.7},{t:'n',l:'n+',w:.7}], flow:1, carrier:'both',
+  gate:2, band:[0,1],
+  fn:"A MOSFET gate driving a bipolar output stage. It switches like a FET but conducts like a BJT at high voltage — the workhorse of motor drives, EV inverters, and the grid.",
+  mat:"Si", chips:["MOS + BJT","high-power switch"]},
+
+ {fam:"transistors", n:"HEMT", a:"HEMT",
+  reg:[{t:'n',l:'n+ S',w:.85},{t:'i',l:'2DEG channel',w:1.55},{t:'n',l:'n+ D',w:.85}], flow:1, carrier:'e',
+  gate:1, band:[.2,.8], hemt:true,
+  fn:"Donors live in a wide-gap barrier; their electrons fall into an undoped channel and race along a 2-D sheet, away from the impurities that would scatter them. Sky-high mobility for radar, 5G, and GaN power.",
+  mat:"GaN / GaAs", chips:["Si δ-doping","microwave"]},
+
+ {fam:"transistors", n:"Thyristor / SCR", a:"SCR",
+  reg:[{t:'p',l:'p',w:1},{t:'n',l:'n',w:1},{t:'p',l:'p',w:1},{t:'n',l:'n',w:1}], flow:1, carrier:'both',
+  fn:"Four doped layers that latch: a pulse on the gate turns it fully on and it stays on until the current stops. The classic switch for AC power control, dimmers, and large rectifiers.",
+  mat:"Si", chips:["p-n-p-n","power latch"]},
+
+ {fam:"light", n:"LED", a:"LED",
+  reg:[{t:'p',l:'p-GaN',w:1},{t:'i',l:'active',w:.5},{t:'n',l:'n-GaN',w:1}], flow:1, carrier:'both',
+  light:'out',
+  fn:"A junction in a direct-bandgap crystal. Carriers meet in the active layer and recombine as photons; the material sets the colour. Doping is Mg for p-side, Si for n-side in GaN.",
+  mat:"GaN / AlGaInP", chips:["Mg + Si","emit light"]},
+
+ {fam:"light", n:"Laser diode", a:"laser",
+  reg:[{t:'p',l:'p',w:1},{t:'i',l:'QW active',w:.5},{t:'n',l:'n',w:1}], flow:1, carrier:'both',
+  light:'out',
+  fn:"An LED with mirrors and hard injection, so emission turns coherent. Drives fibre-optic links, optical discs, barcode scanners, and lidar.",
+  mat:"GaAs / InP", chips:["heavy inject","coherent light"]},
+
+ {fam:"light", n:"Photodiode", a:"photodiode",
+  reg:[{t:'p',l:'p',w:.9},{t:'i',l:'i',w:.8},{t:'n',l:'n',w:.9}], flow:-1, carrier:'both',
+  light:'in',
+  fn:"Run a junction in reverse and let light in: each photon frees a carrier pair and a photocurrent flows. The receiver in optical links, light meters, and pulse oximeters.",
+  mat:"Si / InGaAs", chips:["reverse bias","light → current"]},
+
+ {fam:"light", n:"Solar cell", a:"solar",
+  reg:[{t:'n',l:'n+ emitter',w:.7},{t:'p',l:'p base',w:1.7}], flow:1, carrier:'both',
+  light:'in',
+  fn:"A big shallow junction over a thick base. Sunlight frees carriers, the junction's built-in field sweeps them apart, and the panel delivers power. Same B + P doping as a logic chip, spread over a wafer.",
+  mat:"Si", chips:["P + B","photovoltaic"]},
+
+ {fam:"light", n:"Image sensor cell", a:"CMOS/CCD",
+  reg:[{t:'n',l:'n',w:.8},{t:'p',l:'p well',w:1.4},{t:'n',l:'n+',w:.8}], flow:-1, carrier:'e',
+  light:'in', gate:1, band:[0,1],
+  fn:"A pinned photodiode plus a readout transistor, tiled by the million. Light fills each doped well with charge; the chip reads how much. Every phone camera is this cell repeated across a grid.",
+  mat:"Si", chips:["pinned PD","capture image"]},
+
+ {fam:"sense", n:"Hall sensor", a:"Hall",
+  reg:[{t:'n',l:'n-type sheet',w:3}], flow:1, carrier:'e', band:[0,1], hall:true,
+  fn:"Push current through a doped sheet inside a magnetic field and the carriers deflect sideways, producing a voltage across the bar. Contactless sensing of position, speed, and current.",
+  mat:"InSb / GaAs", chips:["high-mobility n","magnetic field"]},
+
+ {fam:"sense", n:"Gunn diode", a:"Gunn",
+  reg:[{t:'n',l:'n+',w:.6},{t:'n',l:'n active',w:1.7},{t:'n',l:'n+',w:.6}], flow:1, carrier:'e',
+  band:[0,1], domain:true,
+  fn:"No junction at all — just doped GaAs. Above a threshold field, electrons bunch into travelling domains and the bulk shows negative resistance, oscillating at microwave rates. Doppler radar and motion sensors.",
+  mat:"GaAs", chips:["bulk n","microwave source"]},
+
+ {fam:"sense", n:"IMPATT diode", a:"IMPATT",
+  reg:[{t:'p',l:'p+',w:.7},{t:'n',l:'n',w:1.4},{t:'n',l:'n+',w:.7}], flow:-1, carrier:'e',
+  fn:"Drive a junction into avalanche and let transit-time delay flip the phase: it pumps power back into a resonator. One of the highest-power solid-state microwave and millimetre-wave sources.",
+  mat:"Si / GaAs", chips:["avalanche","mm-wave power"]},
+
+ {fam:"memory", n:"Flash cell", a:"flash",
+  reg:[{t:'n',l:'n+ S',w:.9},{t:'p',l:'p',w:1.5},{t:'n',l:'n+ D',w:.9}], flow:1, carrier:'e',
+  fgate:1, band:[.28,.72],
+  fn:"A MOSFET with an extra isolated gate buried in the oxide. Charge tunnelled onto that floating gate stays for years with no power — one trapped pocket of electrons is one stored bit. SSDs and USB drives.",
+  mat:"Si", chips:["floating gate","non-volatile bit"]},
+
+ {fam:"memory", n:"DRAM cell", a:"DRAM",
+  reg:[{t:'n',l:'n+',w:.9},{t:'p',l:'p',w:1.1},{t:'n',l:'n+ → C',w:.9}], flow:1, carrier:'e',
+  gate:1, band:[0,1], cap:true,
+  fn:"One doped transistor guarding one tiny capacitor. The capacitor holds a bit as a dab of charge that leaks away, so it's refreshed thousands of times a second. The working memory in every computer.",
+  mat:"Si", chips:["1T + 1C","fast volatile"]}
+];
+
+/* ---------- geometry ---------- */
+const W=320, H=150;
+const SX=20, SX2=300, SY=58, SY2=116;   // slab box
+const SLW=SX2-SX, MID=(SY+SY2)/2;
+
+function svgEl(tag, attrs){
+  const e=document.createElementNS(NS,tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+function buildDiagram(d, scale){
+  const s = scale||1;
+  const svg = svgEl("svg",{viewBox:`0 0 ${W} ${H}`,preserveAspectRatio:"xMidYMid meet"});
+
+  // region x-bounds
+  const total = d.reg.reduce((a,r)=>a+r.w,0);
+  let x = SX;
+  const bounds=[];
+  d.reg.forEach(r=>{
+    const w = SLW*(r.w/total);
+    bounds.push({x0:x, x1:x+w, r});
+    x+=w;
+  });
+
+  // slab regions
+  bounds.forEach((b,idx)=>{
+    svg.appendChild(svgEl("rect",{x:b.x0,y:SY,width:b.x1-b.x0,height:SY2-SY,
+      fill:FILL[b.r.t], stroke:"rgba(255,255,255,.10)","stroke-width":1}));
+    const t=svgEl("text",{x:(b.x0+b.x1)/2,y:MID+3,"text-anchor":"middle",
+      "font-family":"JetBrains Mono, monospace","font-size":9.5,fill:COL[b.r.t],opacity:.95});
+    t.textContent=b.r.l;
+    svg.appendChild(t);
+    // junction line to next region if different type
+    if(idx<bounds.length-1 && bounds[idx+1].r.t!==b.r.t){
+      svg.appendChild(svgEl("line",{x1:b.x1,y1:SY-3,x2:b.x1,y2:SY2+3,
+        stroke:"var(--violet)","stroke-width":1.4,opacity:.65}));
+    }
+  });
+  // slab outline
+  svg.appendChild(svgEl("rect",{x:SX,y:SY,width:SLW,height:SY2-SY,fill:"none",
+    stroke:"rgba(255,255,255,.18)","stroke-width":1.2,rx:3}));
+
+  // gate stack over region index d.gate
+  if(d.gate!=null){
+    const b=bounds[d.gate];
+    svg.appendChild(svgEl("rect",{x:b.x0+4,y:SY-6,width:(b.x1-b.x0)-8,height:4,
+      fill:FILL.oxide,stroke:"none"}));                         // oxide
+    svg.appendChild(svgEl("rect",{x:b.x0+4,y:SY-15,width:(b.x1-b.x0)-8,height:9,
+      fill:FILL.metal,stroke:"rgba(255,255,255,.2)"}));         // gate
+    const g=svgEl("text",{x:(b.x0+b.x1)/2,y:SY-18,"text-anchor":"middle",
+      "font-family":"JetBrains Mono, monospace","font-size":8,fill:COL.metal});
+    g.textContent="G"; svg.appendChild(g);
+  }
+  // floating-gate stack (memory)
+  if(d.fgate!=null){
+    const b=bounds[d.fgate]; const cx=b.x0+4, cw=(b.x1-b.x0)-8;
+    svg.appendChild(svgEl("rect",{x:cx,y:SY-6,width:cw,height:3,fill:FILL.oxide}));     // tunnel oxide
+    svg.appendChild(svgEl("rect",{x:cx,y:SY-13,width:cw,height:6,fill:FILL.metal,
+      stroke:COL.light,"stroke-width":1.1}));                                            // floating gate (charged)
+    svg.appendChild(svgEl("rect",{x:cx,y:SY-16,width:cw,height:2.5,fill:FILL.oxide}));
+    svg.appendChild(svgEl("rect",{x:cx,y:SY-24,width:cw,height:7,fill:FILL.metal,
+      stroke:"rgba(255,255,255,.2)"}));                                                  // control gate
+    const lbl=svgEl("text",{x:b.x1+2,y:SY-9,"font-family":"JetBrains Mono, monospace",
+      "font-size":7.5,fill:COL.light});
+    lbl.textContent="FG"; svg.appendChild(lbl);
+  }
+  // storage capacitor (DRAM)
+  if(d.cap){
+    const b=bounds[bounds.length-1]; const cx=(b.x0+b.x1)/2;
+    svg.appendChild(svgEl("line",{x1:cx,y1:SY2,x2:cx,y2:SY2+12,stroke:COL.n,"stroke-width":1.3}));
+    svg.appendChild(svgEl("line",{x1:cx-7,y1:SY2+12,x2:cx+7,y2:SY2+12,stroke:COL.n,"stroke-width":2}));
+    svg.appendChild(svgEl("line",{x1:cx-7,y1:SY2+16,x2:cx+7,y2:SY2+16,stroke:COL.metal,"stroke-width":2}));
+  }
+  // 2DEG sheet line (HEMT)
+  if(d.hemt){
+    svg.appendChild(svgEl("line",{x1:SX+3,y1:SY2-6,x2:SX2-3,y2:SY2-6,
+      stroke:COL.n,"stroke-width":1.4,"stroke-dasharray":"1 3",opacity:.8}));
+  }
+  // light rays
+  if(d.light){
+    const xs=[SX+SLW*0.32, SX+SLW*0.5, SX+SLW*0.68];
+    xs.forEach(px=>{
+      const y0 = d.light==='in' ? 16 : SY-4;
+      const y1 = d.light==='in' ? SY-4 : 16;
+      const ln=svgEl("line",{x1:px-6,y1:y0,x2:px+6,y2:y1,stroke:COL.light,
+        "stroke-width":1.5,opacity:.85,"stroke-linecap":"round"});
+      svg.appendChild(ln);
+      // arrowhead
+      const ax = d.light==='in' ? px+6 : px-6;
+      const ay = d.light==='in' ? y1 : y1;
+      svg.appendChild(svgEl("circle",{cx: d.light==='in'?px+5:px-5, cy:y1+ (d.light==='in'?-1:1),
+        r:1.6, fill:COL.light}));
+    });
+  }
+  // Hall transverse field + voltage
+  if(d.hall){
+    const t=svgEl("text",{x:(SX+SX2)/2,y:SY-6,"text-anchor":"middle",
+      "font-family":"JetBrains Mono, monospace","font-size":9,fill:"var(--violet)"});
+    t.textContent="B ⊗"; svg.appendChild(t);
+    svg.appendChild(svgEl("text",Object.assign({x:SX2+2,y:SY+6,"font-family":"JetBrains Mono, monospace","font-size":7.5,fill:COL.p},{})))
+      .textContent="V_H";
+  }
+
+  // carrier layer
+  const cg = svgEl("g",{class:"carriers"});
+  svg.appendChild(cg);
+
+  return {svg, cg, bounds};
+}
+
+/* ---------- carrier animation ---------- */
+const animated=[]; // {cg, carriers:[{el,x,vx,lo,hi}], visible:true}
+
+function seedCarriers(diag, d){
+  if(d.flow===0) return null;   // varactor: no DC carriers
+  const band = d.band || [0,1];
+  const lo = SX + SLW*band[0] + 4;
+  const hi = SX + SLW*band[1] - 4;
+  const span = hi-lo;
+  const dir = d.flow>0?1:-1;
+  const rows = d.carrier==='both' ? [MID-5, MID+5] : [MID];
+  const carriers=[];
+  rows.forEach((y,ri)=>{
+    const isHole = d.carrier==='both' ? ri===1 : d.carrier==='h';
+    const color = isHole ? COL.p : COL.n;
+    const cnt = Math.max(3, Math.round(span/26));
+    for(let k=0;k<cnt;k++){
+      const x = lo + (span)*(k/cnt) + (ri?13:0);
+      const c=svgEl("circle",{cx:x,cy:y,r:2.4,fill:color});
+      c.style.filter=`drop-shadow(0 0 3px ${color})`;
+      diag.cg.appendChild(c);
+      carriers.push({el:c, x, vx:dir*(0.45+Math.random()*0.25)*(reduce?0:1), lo, hi});
+    }
+  });
+  const rec={cg:diag.cg, carriers, visible:true};
+  animated.push(rec);
+  return rec;
+}
+
+/* ---------- build page ---------- */
+const FAMILIES = [
+  {id:"diodes", title:"Rectify & regulate", tag:"DIODES",
+   sub:"Two doped regions and a junction between them. The asymmetry is the whole point: current passes one way and is blocked, broken down, tuned, or tunnelled the other."},
+  {id:"transistors", title:"Switch & amplify", tag:"TRANSISTORS",
+   sub:"Add a third region or a gate and a small signal now controls a large one. These are the active devices — every gain stage, every logic gate, every power stage."},
+  {id:"light", title:"Light ⇄ current", tag:"OPTOELECTRONICS",
+   sub:"Run a junction in a crystal where the bandgap matches a colour of light, and carriers and photons trade places — emitted on the way down, captured on the way in."},
+  {id:"sense", title:"Sense & generate", tag:"FIELD / WAVE",
+   sub:"Doped material whose carriers respond to a magnetic field or, past a threshold, organise themselves into oscillation. Sensors and solid-state microwave sources."},
+  {id:"memory", title:"Store", tag:"MEMORY",
+   sub:"Doped transistors arranged to hold a bit — trapped on an isolated gate for years, or balanced on a leaky capacitor and refreshed every few milliseconds."}
+];
+
+function build(){
+  const root=document.getElementById('sections');
+  FAMILIES.forEach(f=>{
+    const sec=document.createElement('section');
+    sec.id=f.id;
+    sec.innerHTML=`<div class="sec-head"><h2>${f.title}</h2><span class="tag">${f.tag}</span></div>
+      <p class="sec-sub">${f.sub}</p><div class="grid"></div>`;
+    const grid=sec.querySelector('.grid');
+    DEVICES.filter(d=>d.fam===f.id).forEach(d=>{
+      const card=document.createElement('div'); card.className='card';
+      const diaWrap=document.createElement('div'); diaWrap.className='diagram';
+      const diag=buildDiagram(d);
+      diaWrap.appendChild(diag.svg);
+      const rec=seedCarriers(diag,d);
+      const chips=(d.chips||[]).map(c=>`<span class="chip">${c}</span>`).join('');
+      const meta=document.createElement('div'); meta.className='meta';
+      meta.innerHTML=`<div class="name"><h3>${d.n}</h3><span class="abbr">${d.a}</span></div>
+        <p>${d.fn}</p>
+        <div class="chips"><span class="chip mat">${d.mat}</span>${chips}</div>`;
+      card.appendChild(diaWrap); card.appendChild(meta);
+      grid.appendChild(card);
+      if(rec) rec._svg=diag.svg;
+    });
+    root.appendChild(sec);
+  });
+
+  // hero = big p-n diode
+  const heroDev = {reg:[{t:'p',l:'p-type',w:1},{t:'n',l:'n-type',w:1}], flow:1, carrier:'both'};
+  const hd=buildDiagram(heroDev);
+  document.getElementById('hero').appendChild(hd.svg);
+  seedCarriers(hd, heroDev);
+}
+build();
+
+/* visibility gating */
+if('IntersectionObserver' in window){
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      const rec=animated.find(a=>a._svg===e.target || a.cg.ownerSVGElement===e.target);
+      if(rec) rec.visible=e.isIntersecting;
+    });
+  },{rootMargin:'100px'});
+  animated.forEach(a=>{ if(a._svg) io.observe(a._svg); });
+}
+
+if(!reduce){
+  function loop(){
+    for(const a of animated){
+      if(!a.visible) continue;
+      for(const c of a.carriers){
+        c.x+=c.vx;
+        if(c.vx>0 && c.x>c.hi) c.x=c.lo;
+        else if(c.vx<0 && c.x<c.lo) c.x=c.hi;
+        c.el.setAttribute('cx', c.x.toFixed(2));
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
